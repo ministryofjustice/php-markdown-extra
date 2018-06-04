@@ -1,2 +1,3 @@
-# php-markdown-extra
-Plugin to support markdown on Wordpress
+# PHP Markdown Extra
+
+PHP Markdown Extra by Michel Fortin is a discontinued WP plugin that provides markdown support for on Wordpress based off of John Gruber's standard. https://daringfireball.net/projects/markdown/.
