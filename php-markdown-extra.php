@@ -6,5 +6,5 @@ defined('ABSPATH') || exit;
 /** Store the plugin root */
 const MOJ_MARKDOWN_DIR = __DIR__;
 
-use MOJMarkdown\Markdown;
-new Markdown();
+use Michelf\Bootstrap;
+new Bootstrap();
