@@ -41,8 +41,8 @@ class Bootstrap extends MarkdownExtra
 
         if (self::WP_COMMENTS) {
             /**
-             * We use the following to hide important tags from wp_kses()
-             * We have 10 random strings and 10 important tags.
+             * Scramble important tags before passing them to the kses filter.
+             * We use 10 random strings and 10 important tags.
              */
             $rot = 'pEj07ZbbBZ U1kqgh4w4p pre2zmeN6K QTi31t9pre ol0MP1jzJR ' .
                 'ML5IjmbRol ulANi1NsGY J7zRLJqPul liA8ctl16T K9nhooUHli';
@@ -61,7 +61,6 @@ class Bootstrap extends MarkdownExtra
         $this->tab_width = self::TAB_WIDTH;
 
         // footnotes
-        $this->fn_id_prefix = "";
         $this->fn_link_title = self::FN_LINK_TITLE;
         $this->fn_backlink_title = self::FN_BACKLINK_TITLE;
         $this->fn_link_class = self::FN_LINK_CLASS;
@@ -73,14 +72,20 @@ class Bootstrap extends MarkdownExtra
     }
 
     /**
-     * Configures WordPress filters to call markdown functions
+     * Configures WordPress filters with markdown callbacks
+     *
+     * Post content and excerpts
+     * - Remove WordPress paragraph generator.
+     * - Run Markdown on excerpt, then remove all tags.
+     * - Add paragraph tag around the excerpt, but remove it for the excerpt rss.
+     *
+     * Comments
+     * - Remove WordPress paragraph generator.
+     * - Remove WordPress auto-link generator.
+     * - Run Markdown on excerpt then remove paragraph tags.
      */
     public function filters()
     {
-        # Post content and excerpts
-        # - Remove WordPress paragraph generator.
-        # - Run Markdown on excerpt, then remove all tags.
-        # - Add paragraph tag around the excerpt, but remove it for the excerpt rss.
         if (self::WP_POSTS) {
             remove_filter('the_content', 'wpautop');
             remove_filter('the_content_rss', 'wpautop');
@@ -98,11 +103,6 @@ class Bootstrap extends MarkdownExtra
             add_filter('get_the_excerpt', 'balanceTags', 9);
         }
 
-        # Comments
-        # - Remove WordPress paragraph generator.
-        # - Remove WordPress auto-link generator.
-        # - Scramble important tags before passing them to the kses filter.
-        # - Run Markdown on excerpt then remove paragraph tags.
         if (self::WP_COMMENTS) {
             remove_filter('comment_text', 'wpautop', 30);
             remove_filter('comment_text', 'make_clickable');
@@ -120,16 +120,26 @@ class Bootstrap extends MarkdownExtra
         add_filter('acf_the_content', [$this, 'markdown'], 10);
     }
 
-    ### Standard Function Interface ###
+    /**
+     * Standard Function Interface
+     * Transform text
+     * @param $text
+     * @return string
+     */
     public function markdown($text): string
     {
-        # Transform text using parser.
         return $this->transform($text);
     }
 
-    # Add a footnote id prefix to posts when inside a loop.
+    /**
+     * Add a footnote id prefix to site posts when inside a loop.
+     * @param $text
+     * @return string
+     */
     public function markdownPost($text): string
     {
+        $this->fn_id_prefix = "";
+
         if (!is_single() || !is_page() || !is_feed()) {
             $this->fn_id_prefix = get_the_ID() . ".";
         }
@@ -137,6 +147,11 @@ class Bootstrap extends MarkdownExtra
         return $this->transform($text);
     }
 
+    /**
+     * Add paragraphs to given text
+     * @param $text
+     * @return string
+     */
     public function addParagraph($text): string
     {
         if (!preg_match('{^$|^<(p|ul|ol|dl|pre|blockquote)>}i', (string)$text)) {
@@ -146,16 +161,33 @@ class Bootstrap extends MarkdownExtra
         return $text;
     }
 
+    /**
+     * Removes paragraph HTML tags from text.
+     * @param $text
+     * @return string
+     */
     public function stripParagraph($text): string
     {
         return preg_replace('{</?p>}i', '', (string)$text);
     }
 
+    /**
+     * String replace using arrays.
+     * Finds specified tags and replaces with scrambled text
+     * @param $text
+     * @return string
+     */
     public function hideTags($text): string
     {
         return str_replace($this->moj_hidden_tags, $this->moj_placeholders, (string)$text);
     }
 
+    /**
+     * String replace using arrays.
+     * Finds scrambled text and replaces with matching tags
+     * @param $text
+     * @return string
+     */
     public function showTags($text): string
     {
         return str_replace($this->moj_placeholders, $this->moj_hidden_tags, (string)$text);
