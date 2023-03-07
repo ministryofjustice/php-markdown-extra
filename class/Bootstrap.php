@@ -29,8 +29,6 @@ class Bootstrap extends MarkdownExtra
     # setting this to true will put attributes on the `pre` tag instead.
     const CODE_ATTR_ON_PRE = "";
 
-    public object $parser;
-
     public array $moj_placeholders;
     public array $moj_hidden_tags;
 
@@ -39,16 +37,46 @@ class Bootstrap extends MarkdownExtra
         parent::__construct();
 
         $this->settings();
-        $this->hooks();
+        $this->filters();
 
         if (self::WP_COMMENTS) {
-            $rot = 'pEj07ZbbBZ U1kqgh4w4p pre2zmeN6K QTi31t9pre ol0MP1jzJR ML5IjmbRol ulANi1NsGY J7zRLJqPul liA8ctl16T K9nhooUHli';
+            /**
+             * The following is used to hide important tags.
+             * We have 10 random strings and 10 important tags.
+             * Tags are hidden when markdown is transformed in comments.
+             */
+            $rot = 'pEj07ZbbBZ U1kqgh4w4p pre2zmeN6K QTi31t9pre ol0MP1jzJR ' .
+                'ML5IjmbRol ulANi1NsGY J7zRLJqPul liA8ctl16T K9nhooUHli';
+
             $this->moj_hidden_tags = explode(' ', '<p> </p> <pre> </pre> <ol> </ol> <ul> </ul> <li> </li>');
             $this->moj_placeholders = explode(' ', str_rot13($rot));
         }
     }
 
-    public function hooks()
+    /**
+     * Modify Markdown and Markdown Extra
+     */
+    public function settings()
+    {
+        $this->empty_element_suffix = self::EMPTY_ELEMENT_SUFFIX;
+        $this->tab_width = self::TAB_WIDTH;
+
+        // footnotes
+        $this->fn_id_prefix = "";
+        $this->fn_link_title = self::FN_LINK_TITLE;
+        $this->fn_backlink_title = self::FN_BACKLINK_TITLE;
+        $this->fn_link_class = self::FN_LINK_CLASS;
+        $this->fn_backlink_class = self::FN_BACKLINK_CLASS;
+
+        // code tag
+        $this->code_class_prefix = self::CODE_CLASS_PREFIX;
+        $this->code_attr_on_pre = self::CODE_ATTR_ON_PRE;
+    }
+
+    /**
+     * Configures WordPress filters to call markdown functions
+     */
+    public function filters()
     {
         # Post content and excerpts
         # - Remove WordPress paragraph generator.
@@ -58,12 +86,12 @@ class Bootstrap extends MarkdownExtra
             remove_filter('the_content', 'wpautop');
             remove_filter('the_content_rss', 'wpautop');
             remove_filter('the_excerpt', 'wpautop');
-            add_filter('the_content', [$this, 'markdown_post'], 6);
-            add_filter('the_content_rss', [$this, 'markdown_post'], 6);
-            add_filter('get_the_excerpt', [$this, 'markdown_post'], 6);
+            add_filter('the_content', [$this, 'markdownPost'], 6);
+            add_filter('the_content_rss', [$this, 'markdownPost'], 6);
+            add_filter('get_the_excerpt', [$this, 'markdownPost'], 6);
             add_filter('get_the_excerpt', 'trim', 7);
-            add_filter('the_excerpt', [$this, 'moj_add_p']);
-            add_filter('the_excerpt_rss', [$this, 'moj_strip_p']);
+            add_filter('the_excerpt', [$this, 'addParagraph']);
+            add_filter('the_excerpt_rss', [$this, 'stripParagraph']);
 
             remove_filter('content_save_pre', 'balanceTags', 50);
             remove_filter('excerpt_save_pre', 'balanceTags', 50);
@@ -80,39 +108,29 @@ class Bootstrap extends MarkdownExtra
             remove_filter('comment_text', 'wpautop', 30);
             remove_filter('comment_text', 'make_clickable');
             add_filter('pre_comment_content', [$this, 'markdown'], 6);
-            add_filter('pre_comment_content', [$this, 'moj_hide_tags'], 8);
-            add_filter('pre_comment_content', [$this, 'moj_show_tags'], 12);
+            add_filter('pre_comment_content', [$this, 'hideTags'], 8);
+            add_filter('pre_comment_content', [$this, 'showTags'], 12);
             add_filter('get_comment_text', [$this, 'markdown'], 6);
             add_filter('get_comment_excerpt', [$this, 'markdown'], 6);
-            add_filter('get_comment_excerpt', [$this, 'moj_strip_p'], 7);
+            add_filter('get_comment_excerpt', [$this, 'stripParagraph'], 7);
         }
-    }
 
-    public function settings()
-    {
-        $this->empty_element_suffix = self::EMPTY_ELEMENT_SUFFIX;
-        $this->tab_width = self::TAB_WIDTH;
-        $this->fn_link_title = self::FN_LINK_TITLE;
-        $this->fn_backlink_title = self::FN_BACKLINK_TITLE;
-        $this->fn_link_class = self::FN_LINK_CLASS;
-        $this->fn_backlink_class = self::FN_BACKLINK_CLASS;
-        $this->code_class_prefix = self::CODE_CLASS_PREFIX;
-        $this->code_attr_on_pre = self::CODE_ATTR_ON_PRE;
+        // Everything else...
+        add_filter('the_content', [$this, 'markdown'], 10);
+        add_filter('the_excerpt', [$this, 'markdown'], 10);
+        add_filter('acf_the_content', [$this, 'markdown'], 10);
     }
 
     ### Standard Function Interface ###
     public function markdown($text): string
     {
         # Transform text using parser.
-        echo $this->debug("Text Transform", $this->transform($text));
         return $this->transform($text);
     }
 
     # Add a footnote id prefix to posts when inside a loop.
-    public function markdown_post($text): string
+    public function markdownPost($text): string
     {
-        $this->fn_id_prefix = "";
-
         if (!is_single() || !is_page() || !is_feed()) {
             $this->fn_id_prefix = get_the_ID() . ".";
         }
@@ -120,7 +138,7 @@ class Bootstrap extends MarkdownExtra
         return $this->transform($text);
     }
 
-    public function moj_add_p($text): string
+    public function addParagraph($text): string
     {
         if (!preg_match('{^$|^<(p|ul|ol|dl|pre|blockquote)>}i', (string)$text)) {
             $text = '<p>' . $text . '</p>';
@@ -129,17 +147,17 @@ class Bootstrap extends MarkdownExtra
         return $text;
     }
 
-    public function moj_strip_p($text): string
+    public function stripParagraph($text): string
     {
         return preg_replace('{</?p>}i', '', (string)$text);
     }
 
-    public function moj_hide_tags($text): string
+    public function hideTags($text): string
     {
         return str_replace($this->moj_hidden_tags, $this->moj_placeholders, (string)$text);
     }
 
-    public function moj_show_tags($text): string
+    public function showTags($text): string
     {
         return str_replace($this->moj_placeholders, $this->moj_hidden_tags, (string)$text);
     }
