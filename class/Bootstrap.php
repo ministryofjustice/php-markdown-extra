@@ -1,5 +1,10 @@
 <?php
-
+/**
+ * Markdown Bootstrapper  -  A WordPress entry-point for a text-to-HTML conversion tool for web writers
+ *
+ * @package   moj-php-markdown-extra
+ * @author    Damien Wilson <damien.wilson@digital.justice.gov.uk>
+ */
 namespace Michelf;
 
 class Bootstrap extends MarkdownExtra
