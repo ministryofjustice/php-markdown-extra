@@ -29,8 +29,8 @@ class Bootstrap extends MarkdownExtra
     # setting this to true will put attributes on the `pre` tag instead.
     const CODE_ATTR_ON_PRE = "";
 
-    public array $moj_placeholders;
-    public array $moj_hidden_tags;
+    public array $moj_placeholders = [];
+    public array $moj_hidden_tags = [];
 
     public function __construct()
     {
@@ -41,9 +41,8 @@ class Bootstrap extends MarkdownExtra
 
         if (self::WP_COMMENTS) {
             /**
-             * The following is used to hide important tags.
+             * We use the following to hide important tags from wp_kses()
              * We have 10 random strings and 10 important tags.
-             * Tags are hidden when markdown is transformed in comments.
              */
             $rot = 'pEj07ZbbBZ U1kqgh4w4p pre2zmeN6K QTi31t9pre ol0MP1jzJR ' .
                 'ML5IjmbRol ulANi1NsGY J7zRLJqPul liA8ctl16T K9nhooUHli';
