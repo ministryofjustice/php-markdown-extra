@@ -23,9 +23,9 @@
   },
   "autoload": {
     "psr-4": {
-      "Michelf\\": "class/"
-    },
-    "files": ["markdown.php"]
+      "Michelf\\": "class/",
+      "MOJMarkdown\\": "class/"
+    }
   },
   "extra" : {
     "installer-name": "php-markdown-extra"
