@@ -1,6 +1,6 @@
 {
   "name": "ministryofjustice/php-markdown-extra",
-  "type": "wordpress-plugin",
+  "type": "wordpress-muplugin",
   "license": "Michel Fortin",
   "description": "PHP Markdown Extra",
   "homepage": "https://github.com/ministryofjustice/php-markdown-extra",
@@ -23,8 +23,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Michelf\\": "class/",
-      "MOJMarkdown\\": "class/"
+      "Michelf\\": "class/"
     }
   },
   "extra" : {

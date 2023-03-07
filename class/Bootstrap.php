@@ -1,22 +1,8 @@
 <?php
 
-/*
-Plugin Name: MOJ Markdown Extra
-Plugin URI: https://github.com/ministryofjustice/php-markdown-extra
-Description: <a href="http://daringfireball.net/projects/markdown/syntax">Markdown syntax</a> allows you to write using an easy-to-read, easy-to-write plain text format. Based on the original Perl version by <a href="http://daringfireball.net/">John Gruber</a>. <a href="http://michelf.ca/projects/php-markdown/">More...</a>
-Version: 2.0.0
-Author: Ministry of Justice, Central Digital, Damien Wilson
-Author URI: https://justice.gov.uk/
-*/
+namespace Michelf;
 
-namespace MOJMarkdown;
-
-use Michelf\MarkdownExtra;
-
-/**
- *
- */
-class Markdown extends MarkdownExtra
+class Bootstrap extends MarkdownExtra
 {
     # Change too false to remove Markdown from posts and/or comments.
     const WP_POSTS = true;
