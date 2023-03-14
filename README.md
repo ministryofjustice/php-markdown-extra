@@ -11,10 +11,11 @@
 > <br>
 > ***The plugin has since been long abandoned***
 
-As of March 2023, the MoJ took over maintenance and reformatted the way the plugin is loaded and maintained. For instance, the latest versions of the classes provided by Michel Fortin are imported, by hand, into the class directory. Using composer, these classes are auto-loaded, and then initialised using `class/Bootstrap.php`
+As of March 2023, the Ministry of Justice reformatted the way the plugin is loaded and maintained. For instance, the latest versions of the classes provided by Michel Fortin are imported, by hand, into the `class/` directory. Using composer, these classes are further auto-loaded, and initialised using `class/Bootstrap.php`
 
 ## Maintenance
-> At the time of update, the following process for maintaining the plugin presented the simplest method.
+> The following process for maintaining the plugin presents the simplest method.
+> <br> Improvement is encouraged.
 
 1. Visit the `lib` directory in [GitHub: Michel Fortin](https://github.com/michelf/php-markdown/tree/lib/Michelf)
 2. Check the version data against our local files, update if needed
