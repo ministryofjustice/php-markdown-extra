@@ -14,8 +14,8 @@
 As of March 2023, the Ministry of Justice reformatted the way the plugin is loaded and maintained. For instance, the latest versions of the classes provided by Michel Fortin are imported, by hand, into the `class/` directory. Using composer, these classes are further auto-loaded, and initialised using `class/Bootstrap.php`
 
 ## Maintenance
-> The following process for maintaining the plugin presents the simplest method.
-> <br> Improvement is encouraged.
+> The following process for maintaining the plugin presents a simple method.
+> <br> _Improvement is encouraged_.
 
 1. Visit the `lib` directory in [GitHub: Michel Fortin](https://github.com/michelf/php-markdown/tree/lib/Michelf)
 2. Check the version data against our local files, update if needed
