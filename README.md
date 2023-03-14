@@ -11,8 +11,8 @@
 > <br>
 > ***The plugin has since been long abandoned***
 >
-
 <br>
+
 As of March 2023, the Ministry of Justice reformatted the way the plugin is loaded and maintained. For instance, the latest versions of the classes provided by Michel Fortin are imported, by hand, into the `class/` directory. Using composer, these classes are further auto-loaded, and initialised using `class/Bootstrap.php`
 
 ## Maintenance
